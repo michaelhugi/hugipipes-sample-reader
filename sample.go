@@ -6,6 +6,7 @@ import (
 )
 
 type Sample struct {
+	SampleRate   float64
 	Wav          *wv.Wav
 	Spectrum     *Spectrum
 	TimeSpectrum *TimeSpectrum
@@ -28,9 +29,15 @@ func LoadSample(sample *os.File) (*Sample, error) {
 	if err != nil {
 		return nil, err
 	}
+	SampleRate := float64(wav.SampleRate)
+	spectrum, err := newSpectrum(samples64, SampleRate)
+	if err != nil {
+		return nil, err
+	}
 	return &Sample{
+		SampleRate:   SampleRate,
 		Wav:          wav,
-		Spectrum:     newSpectrum(samples64, float64(wav.SampleRate)),
+		Spectrum:     spectrum,
 		TimeSpectrum: timeSpectrum,
 	}, nil
 }

@@ -48,7 +48,4 @@ func TestCalculateSample(t *testing.T) {
 
 	tu.AssertEq(f.TimeSpectrum.Items[len(f.TimeSpectrum.Items)-1].Time, timeLastItem, t)
 
-	tu.AssertEq(f.Spectrum.MaxPower, 0.0003695521198731779, t)
-	tu.AssertEq(f.Spectrum.MaxPowerFreq, 20088.392767855355, t)
-	tu.AssertEq(f.TimeSpectrum.MaxPower, 6.467609694477791e-06, t)
 }

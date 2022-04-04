@@ -1,0 +1,4 @@
+github.com/informaticon/lib.go.base.test-utils v0.0.11 h1:0bkoYjvAD9FhrF9mJboPiBcfEBYsxvj/Nqcvdsf/inM=
+github.com/informaticon/lib.go.base.test-utils v0.0.11/go.mod h1:gFgXSKrwx3bMXFhSIiPnnPhFSeno9FzjjF3E8eOHuBg=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 h1:dd7vnTDfjtwCETZDrRe+GPYNLA1jBtbZeyfyE8eZCyk=
+github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12/go.mod h1:i/KKcxEWEO8Yyl11DYafRPKOPVYTrhxiTRigjtEEXZU=

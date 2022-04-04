@@ -1,7 +1,6 @@
 package hugipipes_sample
 
 import (
-	"fmt"
 	tu "github.com/informaticon/lib.go.base.test-utils"
 	wv "github.com/mjibson/go-dsp/wav"
 	"os"
@@ -26,8 +25,8 @@ func TestCalculateSample(t *testing.T) {
 	wav, err := wv.New(file2)
 	tu.AssertNErr(err)
 
-	fmt.Printf("%+v\n", f.Spectrum.Points[0].String())
-	fmt.Printf("%+v\n", f.Spectrum.Points[len(f.Spectrum.Points)-1].String())
+	//fmt.Printf("%+v\n", f.Spectrum.Points[0].String())
+	//fmt.Printf("%+v\n", f.Spectrum.Points[len(f.Spectrum.Points)-1].String())
 	tu.AssertEq(f.Spectrum.Points[0].LowFrequency, 0, t)
 	tu.AssertEq(f.Spectrum.Points[0].CenterFrequency, 0, t)
 	tu.AssertEq(f.Spectrum.Points[0].HighFrequency, 0.22050441008820176, t)

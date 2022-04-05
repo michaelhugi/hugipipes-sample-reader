@@ -3,6 +3,7 @@ package hugipipes_sample
 import (
 	"errors"
 	"fmt"
+	datatype "github.com/informaticon/lib.go.base.data-types"
 	fft2 "github.com/mjibson/go-dsp/fft"
 	"github.com/mjibson/go-dsp/spectral"
 	"github.com/mjibson/go-dsp/wav"
@@ -17,12 +18,15 @@ const (
 	Right Channel = 1
 )
 
+const amplThreshold = -1
+
 type Signal struct {
 	samplesL    []float64
 	samplesR    []float64
 	SampleRate  float64
 	Wav         *wav.Wav
 	SampleCount float64
+	fftSize     int
 }
 
 func (s *Signal) GetSamples(c Channel) []float64 {
@@ -85,7 +89,16 @@ func NewSignal(wavPath string) (s *Signal, e error) {
 		SampleCount: SampleCount,
 		samplesL:    normalize(samplesL, minL, maxL),
 		samplesR:    normalize(samplesR, minR, maxR),
+		fftSize:     calcFFTSize(2, len(samplesL)),
 	}, nil
+}
+
+func calcFFTSize(cur int, sampleSize int) int {
+	next := cur * 2
+	if next > sampleSize {
+		return cur
+	}
+	return calcFFTSize(next, sampleSize)
 }
 
 func calcMinAndMax(samples []float64) (float64, float64) {
@@ -125,38 +138,71 @@ func (s *Signal) String() string {
 		"SamplesL:    %d\n"+
 		"SamplesR:    %d\n"+
 		"Channels:    %d\n"+
+		"FftSize:     %d\n"+
 		"------------------------------\n",
 		s.SampleRate,
 		s.SampleCount,
 		len(s.samplesL),
 		len(s.samplesR),
-		s.Wav.NumChannels)
+		s.Wav.NumChannels,
+		s.fftSize)
 }
 
 func (s *Signal) pwelchOptions() *spectral.PwelchOptions {
 	return &spectral.PwelchOptions{
-		NFFT: s.Wav.Samples,
+		NFFT: s.fftSize,
 	}
 }
 
 func (s *Signal) MonoSpectrum(c Channel) (*MonoSpectrum, error) {
 	samples := s.GetSamples(c)
+	samples = samples[0:s.fftSize]
 	pxx, freqs := spectral.Pwelch(samples, s.SampleRate, s.pwelchOptions())
 
 	spectrumPoints := make([]MonoSpectrumPoint, len(pxx))
 
-	spectrum2 := fft2.FFTReal(samples)
+	///twoSidedSpectrum
+	spectrum2 := fft2.FFTReal(samples) //fft.FFT(dsputils.ToComplex(samples), s.fftSize) //dftNative(samples) // fft2.FFTReal(samples)
 
-	spectrum1 := spectrum2[len(spectrum2)/2-1 : len(spectrum2)]
+	spectrum1 := spectrum2[0:len(pxx)]
 
 	if len(spectrum1) != len(pxx) {
 		panic(fmt.Sprintf("should have same length!\n  %d\n  %d", len(spectrum1), len(pxx)))
 	}
-
+	//testFft(spectrum2)
+	maxAmpl := 0.0
 	for i, p := range pxx {
-		abs := cmplx.Abs(spectrum1[i]) * 2
-		spectrumPoints[i] = *newMonoSpectrumPoint(p, freqs[i], abs)
+
+		amplitudes := cmplx.Abs(spectrum2[i])
+		if amplitudes > maxAmpl {
+			maxAmpl = amplitudes
+		}
+
+		phase := datatype.None[float64]()
+
+		if amplitudes >= amplThreshold {
+			phase = datatype.Some(cmplx.Phase(spectrum2[i]))
+		}
+
+		spectrumPoints[i] = *newMonoSpectrumPoint(p, freqs[i], amplitudes, phase)
+	}
+	ampl := make([]float64, len(spectrumPoints))
+	freq := make([]float64, len(spectrumPoints))
+	for i := range ampl {
+		ampl[i] = spectrumPoints[i].Amplitude
+		freq[i] = spectrumPoints[i].Frequency
 	}
 
-	return newMonoSpectrum(spectrumPoints), nil
+	return newMonoSpectrum(spectrumPoints, maxAmpl), nil
+}
+
+func testFft(spectrum []complex128) {
+	for i := 0; i < len(spectrum); i++ {
+
+		l1 := cmplx.Abs(spectrum[i])
+		r1 := cmplx.Abs(spectrum[len(spectrum)-1-i])
+		if l1 != r1 {
+			panic(fmt.Sprintf("Should be equal\nl:%v\nr:%v\ni:%d", spectrum[i], spectrum[len(spectrum)-1-i], i))
+		}
+	}
 }

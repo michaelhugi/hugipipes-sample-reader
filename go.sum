@@ -12,6 +12,8 @@ github.com/goccmack/goutil v0.4.0 h1:or+SequGBcQp7Rf5q719HlOxtEGueaXEenDbc3pANgk
 github.com/goccmack/goutil v0.4.0/go.mod h1:dPBoKv07AeI2DGYE3ECrSLOLpGaBIBGCUCGKHclOPyU=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/golang/geo v0.0.0-20190916061304-5b978397cfec/go.mod h1:QZ0nwyI2jOfgRAoBvP+ab5aRr7c9x7lhGEJrKvBwjWI=
+github.com/informaticon/lib.go.base.data-types v0.0.13 h1:6pzQBr0tOHMEsf/k+AUo6sj5LDX/2MedZvEn7iZniMI=
+github.com/informaticon/lib.go.base.data-types v0.0.13/go.mod h1:UEjC8Apo5GnfltAuRwUq86RRIPDPaLuZJBMP2xBQ7c4=
 github.com/informaticon/lib.go.base.test-utils v0.0.11 h1:0bkoYjvAD9FhrF9mJboPiBcfEBYsxvj/Nqcvdsf/inM=
 github.com/informaticon/lib.go.base.test-utils v0.0.11/go.mod h1:gFgXSKrwx3bMXFhSIiPnnPhFSeno9FzjjF3E8eOHuBg=
 github.com/jung-kurt/gofpdf v1.0.3-0.20190309125859-24315acbbda5/go.mod h1:7Id9E/uU8ce6rXgefFLlgrJj/GYY22cpxn+r32jIOes=
@@ -30,6 +32,7 @@ github.com/youpy/go-wav v0.0.0-20160223082350-b63a9887d320/go.mod h1:Zf+Ju+8Ofy5
 golang.org/x/exp v0.0.0-20180321215751-8460e604b9de/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20180807140117-3d87b88a115f/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
 golang.org/x/exp v0.0.0-20190125153040-c74c464bbbf2/go.mod h1:CJ0aWSM057203Lf6IL+f9T1iT9GByDxfZKAQTCR3kQA=
+golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81 h1:00VmoueYNlNz/aHIilyyQz/MHSqGoWJzpFv/HW8xpzI=
 golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81/go.mod h1:ux5Hcp/YLpHSI86hEcLt0YII63i6oz57MZXIpbrjZUs=
 golang.org/x/tools v0.0.0-20180525024113-a5b4c53f6e8b/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=
 golang.org/x/tools v0.0.0-20190206041539-40960b6deb8e/go.mod h1:n7NCudcB/nEzxVGmLbDWY5pfWTLqBcC2KZ6jyYvM4mQ=

@@ -77,6 +77,9 @@ func DrawSpectrum(freqLogarithmic bool, path string, frequencies []float64, ampl
 
 	drawer.drawDivider(2*drawer.labelSpace + drawer.plotHeight)
 
+	drawerPower := newSpectrumDrawerPower(drawer, powers, 2*drawer.labelSpace+drawer.plotHeight)
+	drawerPower.draw()
+
 	if !strings.HasSuffix(path, "png") {
 		path = path + ".png"
 	}

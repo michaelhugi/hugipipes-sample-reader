@@ -116,7 +116,9 @@ func calcMinAndMax(samples []float64) (float64, float64) {
 }
 
 func normalize(input []float64, min float64, max float64) []float64 {
-
+	if true {
+		return input
+	}
 	// We can't normalize a flat signal where min == max
 	if min == max {
 		panic("cannot normalize signal. Max == Min")

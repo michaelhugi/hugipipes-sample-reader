@@ -9,6 +9,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"os"
 	"strings"
 )
@@ -18,22 +19,29 @@ var red = color.RGBA{A: 255, R: 128, G: 0, B: 0}
 var blue = color.RGBA{A: 255, R: 0, G: 0, B: 128}
 var gray = color.RGBA{A: 255, R: 128, G: 128, B: 128}
 
+const xLogScaleFactor = 600
+const freqLeftOffset = 2500
+
 type spectrumDrawer struct {
-	plotHeight   int
-	plotWidth    int
-	labelSpace   int
-	imageWidth   int
-	imageHeight  int
-	spacePart    int
-	freqFactor   float64
-	maxFrequency float64
-	img          *image.RGBA
-	frequencies  []float64
+	plotHeight      int
+	plotWidth       int
+	labelSpace      int
+	imageWidth      int
+	imageHeight     int
+	spacePart       int
+	freqFactor      float64
+	maxFrequency    float64
+	img             *image.RGBA
+	frequencies     []float64
+	freqLogarithmic bool
 }
 
-func newSpectrumDrawer(frequencies []float64) *spectrumDrawer {
+func newSpectrumDrawer(frequencies []float64, freqLogarithmic bool) *spectrumDrawer {
 	plotHeight := 300
 	plotWidth := len(frequencies)
+	if freqLogarithmic {
+		plotWidth = int(math.Log(float64(len(frequencies)))*xLogScaleFactor) - freqLeftOffset
+	}
 	labelSpace := 80
 	imageWidth := plotWidth + 2*labelSpace
 	imageHeight := 2*plotHeight + 4*labelSpace
@@ -42,21 +50,21 @@ func newSpectrumDrawer(frequencies []float64) *spectrumDrawer {
 	freqFactor := float64(plotWidth) / maxFrequency
 
 	return &spectrumDrawer{
-		freqFactor:   freqFactor,
-		maxFrequency: maxFrequency,
-
-		frequencies: frequencies,
-		plotHeight:  plotHeight,
-		plotWidth:   plotWidth,
-		labelSpace:  labelSpace,
-		imageWidth:  imageWidth,
-		imageHeight: imageHeight,
-		spacePart:   spacePart,
+		freqFactor:      freqFactor,
+		maxFrequency:    maxFrequency,
+		freqLogarithmic: freqLogarithmic,
+		frequencies:     frequencies,
+		plotHeight:      plotHeight,
+		plotWidth:       plotWidth,
+		labelSpace:      labelSpace,
+		imageWidth:      imageWidth,
+		imageHeight:     imageHeight,
+		spacePart:       spacePart,
 	}
 }
 
-func DrawSpectrum(path string, frequencies []float64, amplitudes []float64, phases []datatype.Option[float64], powers []float64) error {
-	drawer := newSpectrumDrawer(frequencies)
+func DrawSpectrum(freqLogarithmic bool, path string, frequencies []float64, amplitudes []float64, phases []datatype.Option[float64], powers []float64) error {
+	drawer := newSpectrumDrawer(frequencies, freqLogarithmic)
 	img := image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: drawer.imageWidth, Y: drawer.imageHeight}})
 	drawer.img = img
 	drawer.drawBackground()
@@ -77,7 +85,11 @@ func DrawSpectrum(path string, frequencies []float64, amplitudes []float64, phas
 }
 
 func (s *spectrumDrawer) freqToX(freq float64) int {
-	return int(s.freqFactor*freq) + s.labelSpace
+	if !s.freqLogarithmic {
+		return int(s.freqFactor*freq) + s.labelSpace
+	}
+	return int(math.Log(float64(int(s.freqFactor*freq)+s.labelSpace))*xLogScaleFactor) - freqLeftOffset
+
 }
 
 func (s *spectrumDrawer) drawBackground() {

@@ -4,7 +4,7 @@ import (
 	"hugipipes-sample/spectrum_drawer"
 )
 
-func DrawSpectrum(spectrum *MonoSpectrum, path string) error {
-	return spectrum_drawer.DrawSpectrum(path, spectrum.getFrequencies(), spectrum.getAmplitudes(), spectrum.getPhases(), spectrum.getPowers())
+func DrawSpectrum(spectrum *MonoSpectrum, path string, freqLogarithmic bool) error {
+	return spectrum_drawer.DrawSpectrum(freqLogarithmic, path, spectrum.getFrequencies(), spectrum.getAmplitudes(), spectrum.getPhases(), spectrum.getPowers())
 
 }

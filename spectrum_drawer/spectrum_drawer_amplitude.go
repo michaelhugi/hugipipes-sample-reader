@@ -31,6 +31,7 @@ func newSpectrumDrawerAmplitude(spectrumDrawer *spectrumDrawer, amplitudes []flo
 }
 
 func (s *spectrumDrawerAmplitude) draw() {
+	s.drawBaseFrequency(s.yStart)
 	s.drawXAxis(s.yStart)
 	s.drawPlotTitle("Amplitudes / Phases", s.yStart)
 	labels := make([]xlabel, 3)

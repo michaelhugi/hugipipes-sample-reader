@@ -17,26 +17,28 @@ import (
 var green = color.RGBA{A: 255, R: 0, G: 128, B: 0}
 var red = color.RGBA{A: 255, R: 128, G: 0, B: 0}
 var blue = color.RGBA{A: 255, R: 0, G: 0, B: 128}
+var yellow = color.RGBA{A: 255, R: 255, G: 255, B: 0}
 var gray = color.RGBA{A: 255, R: 128, G: 128, B: 128}
 
 const xLogScaleFactor = 600
 const freqLeftOffset = 2500
 
 type spectrumDrawer struct {
-	plotHeight      int
-	plotWidth       int
-	labelSpace      int
-	imageWidth      int
-	imageHeight     int
-	spacePart       int
-	freqFactor      float64
-	maxFrequency    float64
-	img             *image.RGBA
-	frequencies     []float64
-	freqLogarithmic bool
+	plotHeight             int
+	plotWidth              int
+	labelSpace             int
+	imageWidth             int
+	imageHeight            int
+	spacePart              int
+	freqFactor             float64
+	maxFrequency           float64
+	img                    *image.RGBA
+	frequencies            []float64
+	freqLogarithmic        bool
+	estimatedBaseFrequency float64
 }
 
-func newSpectrumDrawer(frequencies []float64, freqLogarithmic bool) *spectrumDrawer {
+func newSpectrumDrawer(frequencies []float64, freqLogarithmic bool, estimatedBaseFrequency float64) *spectrumDrawer {
 	plotHeight := 300
 	plotWidth := len(frequencies)
 	if freqLogarithmic {
@@ -50,21 +52,22 @@ func newSpectrumDrawer(frequencies []float64, freqLogarithmic bool) *spectrumDra
 	freqFactor := float64(plotWidth) / maxFrequency
 
 	return &spectrumDrawer{
-		freqFactor:      freqFactor,
-		maxFrequency:    maxFrequency,
-		freqLogarithmic: freqLogarithmic,
-		frequencies:     frequencies,
-		plotHeight:      plotHeight,
-		plotWidth:       plotWidth,
-		labelSpace:      labelSpace,
-		imageWidth:      imageWidth,
-		imageHeight:     imageHeight,
-		spacePart:       spacePart,
+		freqFactor:             freqFactor,
+		maxFrequency:           maxFrequency,
+		freqLogarithmic:        freqLogarithmic,
+		frequencies:            frequencies,
+		plotHeight:             plotHeight,
+		plotWidth:              plotWidth,
+		labelSpace:             labelSpace,
+		imageWidth:             imageWidth,
+		imageHeight:            imageHeight,
+		spacePart:              spacePart,
+		estimatedBaseFrequency: estimatedBaseFrequency,
 	}
 }
 
-func DrawSpectrum(freqLogarithmic bool, path string, frequencies []float64, amplitudes []float64, phases []datatype.Option[float64], powers []float64) error {
-	drawer := newSpectrumDrawer(frequencies, freqLogarithmic)
+func DrawSpectrum(freqLogarithmic bool, path string, frequencies []float64, amplitudes []float64, phases []datatype.Option[float64], powers []float64, estimatedBaseFrequency float64) error {
+	drawer := newSpectrumDrawer(frequencies, freqLogarithmic, estimatedBaseFrequency)
 	img := image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: drawer.imageWidth, Y: drawer.imageHeight}})
 	drawer.img = img
 	drawer.drawBackground()
@@ -135,7 +138,7 @@ func (s *spectrumDrawer) drawXAxisOctave(oct *Octave, lineTop int) {
 	if oct.drawFrequency() {
 		xFreq := s.freqToX(oct.low) + 5
 		yFreq := lineTop + s.spacePart*5
-		s.drawText(xFreq, yFreq, oct.frequencyReadable(), color.White)
+		s.drawText(xFreq, yFreq, oct.frequencyReadable(), blue)
 	}
 	for _, note := range notes {
 		s.drawXAxisNote(&note, lineTop)
@@ -177,6 +180,14 @@ func (s *spectrumDrawer) drawText(x int, y int, text string, color color.Color) 
 		Dot:  point,
 	}
 	fd.DrawString(text)
+}
+
+func (s *spectrumDrawer) drawBaseFrequency(top int) {
+	x := s.freqToX(s.estimatedBaseFrequency)
+	bottom := top + s.plotHeight + s.labelSpace
+	for y := top + s.labelSpace; y <= bottom; y++ {
+		s.img.Set(x, y, yellow)
+	}
 }
 
 func (s *spectrumDrawer) drawYAxis(top int, labels []xlabel) {

@@ -11,11 +11,11 @@ import (
 	"os"
 )
 
-type Channel uint8
+type AudioChannel uint8
 
 const (
-	Left  Channel = 0
-	Right Channel = 1
+	Left  AudioChannel = 0
+	Right AudioChannel = 1
 )
 
 const amplThreshold = -1
@@ -29,14 +29,14 @@ type Signal struct {
 	fftSize     int
 }
 
-func (s *Signal) GetSamples(c Channel) []float64 {
+func (s *Signal) GetSamples(c AudioChannel) []float64 {
 	if c == Left {
 		return s.samplesL
 	}
 	return s.samplesR
 }
 
-func NewSignal(wavPath string) (s *Signal, e error) {
+func NewSignalFromWav(wavPath string) (s *Signal, e error) {
 	f, err := os.Open(wavPath)
 	if err != nil {
 		return nil, err
@@ -81,16 +81,18 @@ func NewSignal(wavPath string) (s *Signal, e error) {
 			samplesR[i] = float64(samples[i])
 		}
 	}
-	minL, maxL := calcMinAndMax(samplesL)
-	minR, maxR := calcMinAndMax(samplesR)
+	return newSignal(float64(w.SampleRate), w, SampleCount, samplesL, samplesR), nil
+}
+
+func newSignal(SampleRate float64, Wav *wav.Wav, SampleCount float64, samplesL []float64, samplesR []float64) *Signal {
 	return &Signal{
-		SampleRate:  float64(w.SampleRate),
-		Wav:         w,
+		SampleRate:  SampleRate,
+		Wav:         Wav,
 		SampleCount: SampleCount,
-		samplesL:    normalize(samplesL, minL, maxL),
-		samplesR:    normalize(samplesR, minR, maxR),
+		samplesL:    samplesL,
+		samplesR:    samplesR,
 		fftSize:     calcFFTSize(2, len(samplesL)),
-	}, nil
+	}
 }
 
 func calcFFTSize(cur int, sampleSize int) int {
@@ -113,23 +115,6 @@ func calcMinAndMax(samples []float64) (float64, float64) {
 		}
 	}
 	return min, max
-}
-
-func normalize(input []float64, min float64, max float64) []float64 {
-	if true {
-		return input
-	}
-	// We can't normalize a flat signal where min == max
-	if min == max {
-		panic("cannot normalize signal. Max == Min")
-	}
-
-	normalized := make([]float64, len(input))
-
-	for i, val := range input {
-		normalized[i] = 2*((val-min)/(max-min)) - 1
-	}
-	return normalized
 }
 
 func (s *Signal) String() string {
@@ -156,7 +141,7 @@ func (s *Signal) pwelchOptions() *spectral.PwelchOptions {
 	}
 }
 
-func (s *Signal) MonoSpectrum(c Channel) (*MonoSpectrum, error) {
+func (s *Signal) MonoSpectrum(c AudioChannel) (*MonoSpectrum, error) {
 	samples := s.GetSamples(c)
 	samples = samples[0:s.fftSize]
 	pxx, freqs := spectral.Pwelch(samples, s.SampleRate, s.pwelchOptions())
@@ -175,36 +160,124 @@ func (s *Signal) MonoSpectrum(c Channel) (*MonoSpectrum, error) {
 	maxAmpl := 0.0
 	for i, p := range pxx {
 
-		amplitudes := cmplx.Abs(spectrum2[i])
-		if amplitudes > maxAmpl {
-			maxAmpl = amplitudes
-		}
-
+		amplitude := cmplx.Abs(spectrum2[i])
 		phase := datatype.None[float64]()
-
-		if amplitudes >= amplThreshold {
-			phase = datatype.Some(cmplx.Phase(spectrum2[i]))
+		if freqs[i] <= minSpectrumFreq {
+			amplitude = 0.0
+		} else {
+			if amplitude > maxAmpl {
+				maxAmpl = amplitude
+			}
+			if amplitude >= amplThreshold {
+				phase = datatype.Some(cmplx.Phase(spectrum2[i]))
+			}
 		}
-
-		spectrumPoints[i] = *newMonoSpectrumPoint(p, freqs[i], amplitudes, phase)
+		spectrumPoints[i] = *newMonoSpectrumPoint(p, freqs[i], amplitude, phase)
 	}
-	ampl := make([]float64, len(spectrumPoints))
-	freq := make([]float64, len(spectrumPoints))
-	for i := range ampl {
-		ampl[i] = spectrumPoints[i].Amplitude
-		freq[i] = spectrumPoints[i].Frequency
+
+	test := false
+	for _, m := range spectrumPoints {
+		if m.Amplitude >= maxAmpl {
+			test = true
+		}
+	}
+	if !test {
+		panic("wtf?")
 	}
 
 	return newMonoSpectrum(spectrumPoints, maxAmpl), nil
 }
 
-func testFft(spectrum []complex128) {
-	for i := 0; i < len(spectrum); i++ {
+func (s *Signal) BandpassAtBaseFrequency() (*Signal, error) {
+	spec, err := s.MonoSpectrum(Left)
+	if err != nil {
+		return nil, err
+	}
+	f := spec.EstimatedBaseFreq.Frequency
 
-		l1 := cmplx.Abs(spectrum[i])
-		r1 := cmplx.Abs(spectrum[len(spectrum)-1-i])
-		if l1 != r1 {
-			panic(fmt.Sprintf("Should be equal\nl:%v\nr:%v\ni:%d", spectrum[i], spectrum[len(spectrum)-1-i], i))
+	return s.BandPassFilter(f-50.0, f+50.0, 6)
+}
+
+func (s *Signal) calcExactBaseFrequency() (float64, error) {
+	sig, waveCount, err := s.GetPeakToPeakSignal()
+	if err != nil {
+		return 0, err
+	}
+	dt := 1 / sig.SampleRate
+	dur := dt * sig.SampleCount
+	println("Dur ", dur)
+	durPerWave := dur / waveCount
+
+	println("DurW ", durPerWave)
+
+	f := 1 / durPerWave
+	println(f, "Hz")
+	return f, nil
+
+}
+
+func (s *Signal) GetPeakToPeakSignal() (*Signal, float64, error) {
+
+	maxAmpl := 0.0
+
+	for _, a := range s.samplesL {
+		if maxAmpl < a {
+			maxAmpl = a
 		}
 	}
+	validAmpl := 0.6 * maxAmpl
+
+	firstValidPeak := 0
+	curveRising := false
+	for i, curr := range s.samplesL {
+		if i > 0 && curr > validAmpl {
+			prev := s.samplesL[i-1]
+			if curveRising {
+				if curr < prev {
+					firstValidPeak = i - 1
+					break
+				}
+			}
+			curveRising = curr > prev
+		}
+	}
+
+	lastValidPeak := len(s.samplesL) - 2
+	curveRising = false
+	for i := lastValidPeak; i >= 0; i-- {
+		curr := s.samplesL[i]
+		if curr > validAmpl {
+			prev := s.samplesL[i+1]
+			if curveRising {
+				if curr <= prev {
+					lastValidPeak = i + 1
+					break
+				}
+			}
+			curveRising = curr > prev
+		}
+
+	}
+	samplesL := s.samplesL[firstValidPeak : lastValidPeak+1]
+	samplesR := s.samplesR[firstValidPeak : lastValidPeak+1]
+
+	waveCount := 0
+
+	curveRising = false
+
+	for i, curr := range samplesL {
+		if i != 0 {
+			prev := samplesL[i-1]
+			r := curr > prev
+
+			if curveRising && !r {
+				waveCount++
+			}
+			curveRising = r
+		}
+	}
+
+	waveCount++
+
+	return newSignal(s.SampleRate, s.Wav, float64(len(samplesL)), samplesL, samplesR), float64(waveCount), nil
 }

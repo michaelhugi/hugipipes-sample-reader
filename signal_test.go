@@ -23,7 +23,7 @@ func TestNewSignal(t *testing.T) {
 	filterSignal, err := sig.BandpassAtBaseFrequency()
 	tu.AssertNErr(err)
 
-	peakToPeakSignal, _, err := filterSignal.GetPeakToPeakSignal()
+	peakToPeakSignal, _, err := filterSignal.GetPeakToPeakBaseFilteredSignal()
 	tu.AssertNErr(err)
 
 	signals := make([]Signal, 3)
@@ -31,8 +31,20 @@ func TestNewSignal(t *testing.T) {
 	signals[1] = *filterSignal
 	signals[2] = *peakToPeakSignal
 
-	tu.AssertNErr(DrawWaves(signals, "wave", true))
+}
+
+func TestFreq440(t *testing.T) {
+	sig, err := NewSignalFromWav("samples/stecker/Ma_57_st.wav")
+	tu.AssertNErr(err)
 	exactFrequency, err := sig.calcExactBaseFrequency()
 	tu.AssertNErr(err)
-	tu.AssertEq(exactFrequency, 392.00, t)
+	tu.AssertEq(exactFrequency, 440.19740294541276, t)
+}
+
+func TestFreq659(t *testing.T) {
+	sig, err := NewSignalFromWav("samples/stecker/Ma_64_st.wav")
+	tu.AssertNErr(err)
+	exactFrequency, err := sig.calcExactBaseFrequency()
+	tu.AssertNErr(err)
+	tu.AssertEq(exactFrequency, 659.4640706543557, t)
 }

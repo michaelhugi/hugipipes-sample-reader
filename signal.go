@@ -199,7 +199,7 @@ func (s *Signal) BandpassAtBaseFrequency() (*Signal, error) {
 }
 
 func (s *Signal) calcExactBaseFrequency() (float64, error) {
-	sig, waveCount, err := s.GetPeakToPeakSignal()
+	sig, waveCount, err := s.GetPeakToPeakBaseFilteredSignal()
 	if err != nil {
 		return 0, err
 	}
@@ -216,11 +216,16 @@ func (s *Signal) calcExactBaseFrequency() (float64, error) {
 
 }
 
-func (s *Signal) GetPeakToPeakSignal() (*Signal, float64, error) {
-
+func (s *Signal) GetPeakToPeakBaseFilteredSignal() (*Signal, float64, error) {
+	sig, err := s.BandpassAtBaseFrequency()
+	samplesL := sig.GetSamples(Left)
+	samplesR := sig.GetSamples(Right)
+	if err != nil {
+		return nil, 0, err
+	}
 	maxAmpl := 0.0
 
-	for _, a := range s.samplesL {
+	for _, a := range samplesL {
 		if maxAmpl < a {
 			maxAmpl = a
 		}
@@ -229,9 +234,10 @@ func (s *Signal) GetPeakToPeakSignal() (*Signal, float64, error) {
 
 	firstValidPeak := 0
 	curveRising := false
-	for i, curr := range s.samplesL {
+
+	for i, curr := range samplesL {
 		if i > 0 && curr > validAmpl {
-			prev := s.samplesL[i-1]
+			prev := samplesL[i-1]
 			if curveRising {
 				if curr < prev {
 					firstValidPeak = i - 1
@@ -242,12 +248,12 @@ func (s *Signal) GetPeakToPeakSignal() (*Signal, float64, error) {
 		}
 	}
 
-	lastValidPeak := len(s.samplesL) - 2
+	lastValidPeak := len(samplesL) - 2
 	curveRising = false
 	for i := lastValidPeak; i >= 0; i-- {
-		curr := s.samplesL[i]
+		curr := samplesL[i]
 		if curr > validAmpl {
-			prev := s.samplesL[i+1]
+			prev := samplesL[i+1]
 			if curveRising {
 				if curr <= prev {
 					lastValidPeak = i + 1
@@ -258,21 +264,29 @@ func (s *Signal) GetPeakToPeakSignal() (*Signal, float64, error) {
 		}
 
 	}
-	samplesL := s.samplesL[firstValidPeak : lastValidPeak+1]
-	samplesR := s.samplesR[firstValidPeak : lastValidPeak+1]
+	samplesL = samplesL[firstValidPeak : lastValidPeak+1]
+	samplesR = samplesR[firstValidPeak : lastValidPeak+1]
 
 	waveCount := 0
 
 	curveRising = false
-
+	currPeakThreshold := 0.0
+	countBlock := false
 	for i, curr := range samplesL {
 		if i != 0 {
 			prev := samplesL[i-1]
 			r := curr > prev
 
-			if curveRising && !r {
+			if curveRising && !r && !countBlock {
 				waveCount++
+				countBlock = true
+				currPeakThreshold = (prev / 3) * 2
 			}
+
+			if curr < currPeakThreshold {
+				countBlock = false
+			}
+
 			curveRising = r
 		}
 	}

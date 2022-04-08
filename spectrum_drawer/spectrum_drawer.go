@@ -3,6 +3,7 @@ package spectrum_drawer
 import (
 	"fmt"
 	datatype "github.com/informaticon/lib.go.base.data-types"
+	mn "github.com/michaelhugi/go-hugipipes-musical-notes"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
@@ -110,20 +111,24 @@ func (s *spectrumDrawer) drawXAxis(y int) {
 	for x := s.labelSpace - s.spacePart; x <= s.imageWidth; x++ {
 		s.img.Set(x, y, image.White)
 	}
-	s.drawXAxisOctave(Octave1, y)
-	s.drawXAxisOctave(Octave2, y)
-	s.drawXAxisOctave(Octave3, y)
-	s.drawXAxisOctave(Octave4, y)
-	s.drawXAxisOctave(Octave5, y)
-	s.drawXAxisOctave(Octave6, y)
-	s.drawXAxisOctave(Octave7, y)
-	s.drawXAxisOctave(Octave8, y)
-	s.drawXAxisOctave(Octave9, y)
+	temp := mn.NewMTemperamentJust(mn.A, mn.A, mn.Octave4, 440)
+
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.OctaveMinus1)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave0)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave1)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave2)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave3)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave4)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave5)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave6)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave7)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave8)), y)
+	s.drawXAxisOctave(newOctave(temp.Octave(mn.Octave9)), y)
 }
-func (s *spectrumDrawer) drawXAxisOctave(oct *Octave, lineTop int) {
+func (s *spectrumDrawer) drawXAxisOctave(oct Octave, lineTop int) {
 	//Draw line
-	x1 := s.freqToX(oct.low)
-	x2 := s.freqToX(oct.high)
+	x1 := s.freqToX(oct.LowerFrequency())
+	x2 := s.freqToX(oct.UpperFrequency())
 	lineBottom := lineTop + 5*s.spacePart
 	for y := lineTop; y <= lineBottom; y++ {
 		s.img.Set(x1, y, image.White)
@@ -132,11 +137,11 @@ func (s *spectrumDrawer) drawXAxisOctave(oct *Octave, lineTop int) {
 	notes := oct.getNotes()
 	if len(notes) == 0 {
 		y := lineTop + 2*s.spacePart
-		xCenter := s.freqToX((oct.low+oct.high)/2) - 3
-		s.drawText(xCenter, y, fmt.Sprintf("%d", oct.nr), color.White)
+		xCenter := s.freqToX((oct.LowerFrequency()+oct.UpperFrequency())/2) - 3
+		s.drawText(xCenter, y, oct.String(), color.White)
 	}
 	if oct.drawFrequency() {
-		xFreq := s.freqToX(oct.low) + 5
+		xFreq := s.freqToX(oct.LowerFrequency()) + 5
 		yFreq := lineTop + s.spacePart*5
 		s.drawText(xFreq, yFreq, oct.frequencyReadable(), blue)
 	}
@@ -152,16 +157,19 @@ func (s *spectrumDrawer) drawDivider(y int) {
 }
 
 func (s *spectrumDrawer) drawXAxisNote(n *Note, lineTop int) {
-	x1 := s.freqToX(n.freq)
+	x1 := s.freqToX(n.ExactFrequency())
 	lineBottom := lineTop + s.spacePart
 	for y := lineTop; y <= lineBottom; y++ {
 		s.img.Set(x1, y, image.White)
 	}
 	y := lineBottom + s.spacePart + 3
 	x := x1 - 2
-	s.drawText(x, y, n.name, image.White)
+	if !strings.Contains(n.String(), "#") {
+		s.drawText(x, y, n.String(), image.White)
+	}
+
 	y += s.spacePart + 3
-	s.drawText(x, y, n.midi, image.White)
+	s.drawText(x, y, fmt.Sprintf("%d", n.MidiNoteNumber()), image.White)
 }
 
 func (s *spectrumDrawer) drawPlotTitle(title string, lineTop int) {

@@ -1,0 +1,42 @@
+package musical_note
+
+const octave8Factor = 256.0
+const noteScale = 1.0293
+const halfNoteScale = noteScale / 2
+
+const lc0Freq = 4186.01 / octave8Factor
+const c0Freq = 4186.01 / octave8Factor
+const hc0Freq = 4186.01 / octave8Factor
+const lcis0Freq = 4434.92 / octave8Factor
+const cis0Freq = 4434.92 / octave8Factor
+const hcis0Freq = 4434.92 / octave8Factor
+const ld0Freq = 4698.63 / octave8Factor
+const d0Freq = 4698.63 / octave8Factor
+const hd0Freq = 4698.63 / octave8Factor
+const ldis0Freq = 4978.03 / octave8Factor
+const dis0Freq = 4978.03 / octave8Factor
+const hdis0Freq = 4978.03 / octave8Factor
+const le0Freq = 5274.04 / octave8Factor
+const e0Freq = 5274.04 / octave8Factor
+const he0Freq = 5274.04 / octave8Factor
+const lf0Freq = 5587.65 / octave8Factor
+const f0Freq = 5587.65 / octave8Factor
+const hf0Freq = 5587.65 / octave8Factor
+const lfis0Freq = 5919.91 / octave8Factor
+const fis0Freq = 5919.91 / octave8Factor
+const hfis0Freq = 5919.91 / octave8Factor
+const lg0Freq = 6271.93 / octave8Factor
+const g0Freq = 6271.93 / octave8Factor
+const hg0Freq = 6271.93 / octave8Factor
+const lgis0Freq = 6644.88 / octave8Factor
+const gis0Freq = 6644.88 / octave8Factor
+const hgis0Freq = 6644.88 / octave8Factor
+const la0Freq = 7040.00 / octave8Factor
+const a0Freq = 7040.00 / octave8Factor
+const ha0Freq = 7040.00 / octave8Factor
+const lais0Freq = 7458.62 / octave8Factor
+const ais0Freq = 7458.62 / octave8Factor
+const hais0Freq = 7458.62 / octave8Factor
+const lh0Freq = 7902.13 / octave8Factor
+const h0Freq = 7902.13 / octave8Factor
+const hh0Freq = 7902.13 / octave8Factor

@@ -1,12 +1,13 @@
 package hugipipes_sample
 
 import (
+	mn "github.com/michaelhugi/go-hugipipes-musical-notes"
 	"hugipipes-sample/spectrum_drawer"
 	"hugipipes-sample/wave_drawer"
 )
 
-func DrawSpectrum(spectrum *MonoSpectrum, path string, freqLogarithmic bool) error {
-	return spectrum_drawer.DrawSpectrum(freqLogarithmic, path, spectrum.getFrequencies(), spectrum.getAmplitudes(), spectrum.getPhases(), spectrum.getPowers(), spectrum.EstimatedBaseFreq.Frequency)
+func DrawSpectrum(spectrum *MonoSpectrum, path string, temperament mn.MTemperament, lowNote mn.MNote, highNote mn.MNote) error {
+	return spectrum_drawer.DrawSpectrum(path, spectrum.getFrequencies(), spectrum.getAmplitudes(), spectrum.getPhases(), spectrum.getPowers(), spectrum.EstimatedBaseFreq.Frequency, temperament, lowNote, highNote)
 }
 
 func DrawWaves(signals []Signal, path string, scaleAmplitudePerDraw bool) error {

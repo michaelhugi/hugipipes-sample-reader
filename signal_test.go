@@ -2,6 +2,7 @@ package hugipipes_sample
 
 import (
 	tu "github.com/informaticon/lib.go.base.test-utils"
+	mn "github.com/michaelhugi/go-hugipipes-musical-notes"
 	"testing"
 )
 
@@ -17,8 +18,11 @@ func TestNewSignal(t *testing.T) {
 	tu.AssertVNErr(sig2.MonoSpectrum(Left))
 
 	specL, err := sig.MonoSpectrum(Left)
+	temp := mn.NewMTemperamentEqual(440)
+	lowNote := temp.Octave(3).Note(mn.C)
+	highNote := temp.Octave(6).Note(mn.C)
 	tu.AssertNErr(err)
-	tu.AssertNErr(DrawSpectrum(specL, "spectrum", true))
+	tu.AssertNErr(DrawSpectrum(specL, "spectrum", temp, lowNote, highNote))
 
 	filterSignal, err := sig.BandpassAtBaseFrequency()
 	tu.AssertNErr(err)

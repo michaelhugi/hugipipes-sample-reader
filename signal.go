@@ -3,7 +3,6 @@ package hugipipes_sample
 import (
 	"errors"
 	"fmt"
-	datatype "github.com/informaticon/lib.go.base.data-types"
 	fft2 "github.com/mjibson/go-dsp/fft"
 	"github.com/mjibson/go-dsp/spectral"
 	"github.com/mjibson/go-dsp/wav"
@@ -161,16 +160,14 @@ func (s *Signal) MonoSpectrum(c AudioChannel) (*MonoSpectrum, error) {
 	for i, p := range pxx {
 
 		amplitude := cmplx.Abs(spectrum2[i])
-		phase := datatype.None[float64]()
+		phase := cmplx.Phase(spectrum2[i])
 		if freqs[i] <= minSpectrumFreq {
 			amplitude = 0.0
 		} else {
 			if amplitude > maxAmpl {
 				maxAmpl = amplitude
 			}
-			if amplitude >= amplThreshold {
-				phase = datatype.Some(cmplx.Phase(spectrum2[i]))
-			}
+
 		}
 		spectrumPoints[i] = *newMonoSpectrumPoint(p, freqs[i], amplitude, phase)
 	}

@@ -2,8 +2,8 @@ package spectrum_drawer
 
 import (
 	"fmt"
-	datatype "github.com/informaticon/lib.go.base.data-types"
 	mn "github.com/michaelhugi/go-hugipipes-musical-notes"
+	sd "github.com/michaelhugi/go-hugipipes-signal-drawer"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
@@ -67,22 +67,22 @@ func newSpectrumDrawer(frequencies []float64, freqLogarithmic bool, estimatedBas
 	}
 }
 
-func DrawSpectrum(freqLogarithmic bool, path string, frequencies []float64, amplitudes []float64, phases []datatype.Option[float64], powers []float64, estimatedBaseFrequency float64) error {
-	drawer := newSpectrumDrawer(frequencies, freqLogarithmic, estimatedBaseFrequency)
-	img := image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: drawer.imageWidth, Y: drawer.imageHeight}})
-	drawer.img = img
-	drawer.drawBackground()
+func DrawSpectrum(path string, frequencies []float64, amplitudes []float64, phases []float64, powers []float64, estimatedBaseFrequency float64, temperament mn.MTemperament, lowNote mn.MNote, highNote mn.MNote) error {
 
-	drawerAmplitude := newSpectrumDrawerAmplitude(drawer, amplitudes, 0)
-	drawerAmplitude.draw()
+	drawer := sd.NewDrawer()
 
-	drawerPhase := newSpectrumDrawerPhase(drawer, phases, 0)
-	drawerPhase.draw()
+	spec1 := sd.NewSpectrumDrawer(drawer, frequencies, "Spectrum").Temperament(temperament).StartNote(lowNote).EndNote(highNote)
 
-	drawer.drawDivider(2*drawer.labelSpace + drawer.plotHeight)
+	spec1.SetItems(sd.NewSpectrumDrawerItems(amplitudes, true, blue))
+	spec1.SetItems(sd.NewSpectrumDrawerItems(phases, false, red))
+	spec1.SetMark(sd.NewSpectrumDrawerMark(estimatedBaseFrequency, green))
 
-	drawerPower := newSpectrumDrawerPower(drawer, powers, 2*drawer.labelSpace+drawer.plotHeight)
-	drawerPower.draw()
+	drawer.AddPlot(spec1)
+
+	img := image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: drawer.GetWidth(), Y: drawer.GetHeight()}})
+
+	drawer.SetDrawable(sd.NewImageDrawable(img))
+	drawer.Build().Draw()
 
 	if !strings.HasSuffix(path, "png") {
 		path = path + ".png"
@@ -102,7 +102,7 @@ func (s *spectrumDrawer) freqToX(freq float64) int {
 func (s *spectrumDrawer) drawBackground() {
 	for x := 0; x <= s.imageWidth; x++ {
 		for y := 0; y <= s.imageHeight; y++ {
-			s.img.Set(x, y, image.Black)
+			s.img.Set(x, y, image.Black.C)
 		}
 	}
 }

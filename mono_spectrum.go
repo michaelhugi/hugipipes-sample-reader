@@ -2,7 +2,6 @@ package hugipipes_sample
 
 import (
 	"fmt"
-	datatype "github.com/informaticon/lib.go.base.data-types"
 )
 
 const minSpectrumFreq = 15.0
@@ -54,8 +53,8 @@ func (s *MonoSpectrum) getFrequencies() []float64 {
 	return frequencies
 }
 
-func (s *MonoSpectrum) getPhases() []datatype.Option[float64] {
-	phases := make([]datatype.Option[float64], len(s.Points))
+func (s *MonoSpectrum) getPhases() []float64 {
+	phases := make([]float64, len(s.Points))
 	for i, p := range s.Points {
 		phases[i] = p.Phase
 	}

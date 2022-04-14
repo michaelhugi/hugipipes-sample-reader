@@ -1,16 +1,15 @@
 package hugipipes_sample
 
 import "fmt"
-import dt "github.com/informaticon/lib.go.base.data-types"
 
 type MonoSpectrumPoint struct {
 	Frequency float64
 	Power     float64
 	Amplitude float64
-	Phase     dt.Option[float64]
+	Phase     float64
 }
 
-func newMonoSpectrumPoint(Power float64, Frequency float64, Amplitude float64, Phase dt.Option[float64]) *MonoSpectrumPoint {
+func newMonoSpectrumPoint(Power float64, Frequency float64, Amplitude float64, Phase float64) *MonoSpectrumPoint {
 	return &MonoSpectrumPoint{
 		Power:     Power,
 		Frequency: Frequency,

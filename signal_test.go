@@ -22,7 +22,6 @@ func TestNewSignal(t *testing.T) {
 	lowNote := temp.Octave(3).Note(mn.C)
 	highNote := temp.Octave(6).Note(mn.C)
 	tu.AssertNErr(err)
-	tu.AssertNErr(DrawSpectrum(specL, "spectrum", temp, lowNote, highNote))
 
 	filterSignal, err := sig.BandpassAtBaseFrequency()
 	tu.AssertNErr(err)
@@ -34,7 +33,7 @@ func TestNewSignal(t *testing.T) {
 	signals[0] = *sig
 	signals[1] = *filterSignal
 	signals[2] = *peakToPeakSignal
-
+	tu.AssertNErr(DrawSpectrumAndWaves(specL, "spectrum", temp, lowNote, highNote, signals))
 }
 
 func TestFreq440(t *testing.T) {

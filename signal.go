@@ -8,6 +8,7 @@ import (
 	"github.com/mjibson/go-dsp/wav"
 	"math/cmplx"
 	"os"
+	"time"
 )
 
 type AudioChannel uint8
@@ -22,6 +23,7 @@ const amplThreshold = -1
 type Signal struct {
 	samplesL    []float64
 	samplesR    []float64
+	times       []time.Duration
 	SampleRate  float64
 	Wav         *wav.Wav
 	SampleCount float64
@@ -33,6 +35,10 @@ func (s *Signal) GetSamples(c AudioChannel) []float64 {
 		return s.samplesL
 	}
 	return s.samplesR
+}
+
+func (s *Signal) GetTimes() []time.Duration {
+	return s.times
 }
 
 func NewSignalFromWav(wavPath string) (s *Signal, e error) {
@@ -80,16 +86,25 @@ func NewSignalFromWav(wavPath string) (s *Signal, e error) {
 			samplesR[i] = float64(samples[i])
 		}
 	}
-	return newSignal(float64(w.SampleRate), w, SampleCount, samplesL, samplesR), nil
+	dt := float64(w.Duration.Nanoseconds()) / float64(len(samplesL))
+
+	times := make([]time.Duration, len(samplesL))
+	for i := range times {
+		f := time.Duration(dt * float64(i))
+		times[i] = time.Nanosecond * f
+	}
+
+	return newSignal(float64(w.SampleRate), w, SampleCount, samplesL, samplesR, times), nil
 }
 
-func newSignal(SampleRate float64, Wav *wav.Wav, SampleCount float64, samplesL []float64, samplesR []float64) *Signal {
+func newSignal(SampleRate float64, Wav *wav.Wav, SampleCount float64, samplesL []float64, samplesR []float64, times []time.Duration) *Signal {
 	return &Signal{
 		SampleRate:  SampleRate,
 		Wav:         Wav,
 		SampleCount: SampleCount,
 		samplesL:    samplesL,
 		samplesR:    samplesR,
+		times:       times,
 		fftSize:     calcFFTSize(2, len(samplesL)),
 	}
 }
@@ -290,5 +305,5 @@ func (s *Signal) GetPeakToPeakBaseFilteredSignal() (*Signal, float64, error) {
 
 	waveCount++
 
-	return newSignal(s.SampleRate, s.Wav, float64(len(samplesL)), samplesL, samplesR), float64(waveCount), nil
+	return newSignal(s.SampleRate, s.Wav, float64(len(samplesL)), samplesL, samplesR, s.times), float64(waveCount), nil
 }

@@ -20,7 +20,7 @@ func (s *Signal) LowPassFilter(cutOffFreq float64, order int) (*Signal, error) {
 			return nil, err
 		}
 	}
-	return newSignal(s.SampleRate, s.Wav, float64(len(bufferL.Floats)), bufferL.Floats, bufferR.Floats), nil
+	return newSignal(s.SampleRate, s.Wav, float64(len(bufferL.Floats)), bufferL.Floats, bufferR.Floats, s.times), nil
 }
 
 func (s *Signal) HighPassFilter(cutOffFreq float64, order int) (*Signal, error) {
@@ -39,7 +39,7 @@ func (s *Signal) HighPassFilter(cutOffFreq float64, order int) (*Signal, error) 
 			return nil, err
 		}
 	}
-	return newSignal(s.SampleRate, s.Wav, float64(len(bufferL.Floats)), bufferL.Floats, bufferR.Floats), nil
+	return newSignal(s.SampleRate, s.Wav, float64(len(bufferL.Floats)), bufferL.Floats, bufferR.Floats, s.times), nil
 }
 
 func (s *Signal) BandPassFilter(lower, upper float64, order int) (*Signal, error) {

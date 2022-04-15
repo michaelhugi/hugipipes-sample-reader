@@ -24,6 +24,8 @@ github.com/mattetti/audio v0.0.0-20190404201502-c6aebeb78429 h1:5YWANgpchDSYJ0R6
 github.com/mattetti/audio v0.0.0-20190404201502-c6aebeb78429/go.mod h1:LlQmBGkOuV/SKzEDXBPKauvN2UqCgzXO2XjecTGj40s=
 github.com/michaelhugi/go-hugipipes-musical-notes v1.0.2 h1:hkQl9/ROBagv9W2v15C5trtQlyEhTcmtzPEd4t7NNeo=
 github.com/michaelhugi/go-hugipipes-musical-notes v1.0.2/go.mod h1:Su0DI5UtsIVizXuYT3ceELQWebQEFWJ0H7rzmqJC1TQ=
+github.com/michaelhugi/go-hugipipes-signal-drawer v0.0.2 h1:XwVi0ZH9ysu+nIgqQqu/xxT7y/j3YEX7P+9CieDLUUo=
+github.com/michaelhugi/go-hugipipes-signal-drawer v0.0.2/go.mod h1:7V8nTbHXzz1Yr0LuW2ZYKBZrCRlkCEv5GXz/fXBKK/A=
 github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12 h1:dd7vnTDfjtwCETZDrRe+GPYNLA1jBtbZeyfyE8eZCyk=
 github.com/mjibson/go-dsp v0.0.0-20180508042940-11479a337f12/go.mod h1:i/KKcxEWEO8Yyl11DYafRPKOPVYTrhxiTRigjtEEXZU=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

@@ -2,7 +2,7 @@ package hugipipes_sample
 
 import (
 	tu "github.com/informaticon/lib.go.base.test-utils"
-	mn "github.com/michaelhugi/go-hugipipes-musical-notes"
+	"image"
 	"testing"
 )
 
@@ -18,9 +18,9 @@ func TestNewSignal(t *testing.T) {
 	tu.AssertVNErr(sig2.MonoSpectrum(Left))
 
 	specL, err := sig.MonoSpectrum(Left)
-	temp := mn.NewMTemperamentEqual(440)
-	lowNote := temp.Octave(3).Note(mn.C)
-	highNote := temp.Octave(6).Note(mn.C)
+	//temp := mn.NewMTemperamentEqual(440)
+	//lowNote := temp.Octave(3).Note(mn.C)
+	//highNote := temp.Octave(6).Note(mn.C)
 	tu.AssertNErr(err)
 
 	filterSignal, err := sig.BandpassAtBaseFrequency()
@@ -29,11 +29,13 @@ func TestNewSignal(t *testing.T) {
 	peakToPeakSignal, _, err := filterSignal.GetPeakToPeakBaseFilteredSignal()
 	tu.AssertNErr(err)
 
-	signals := make([]Signal, 3)
-	signals[0] = *sig
-	signals[1] = *filterSignal
-	signals[2] = *peakToPeakSignal
-	tu.AssertNErr(DrawSpectrumAndWaves(specL, "spectrum", temp, lowNote, highNote, signals))
+	drawer := NewPngDrawer().PlotWidth(int(sig.SampleCount))
+	drawer.AddSpectrum(NewSpectrumPngDrawer(specL, "Spectrum"))
+	wv1 := NewWavePngDrawer("Signal unfiltered / filtered", NewWavePngDrawerItem(sig, Left, blue))
+	wv1.AddWave(NewWavePngDrawerItem(filterSignal, Left, image.White.C))
+	drawer.AddWave(wv1)
+	drawer.AddWave(NewWavePngDrawer("Peak to peak filtered", NewWavePngDrawerItem(peakToPeakSignal, Left, image.White.C)))
+	tu.AssertNErr(drawer.Draw("testspectrum"))
 }
 
 func TestFreq440(t *testing.T) {
